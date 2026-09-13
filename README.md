@@ -4,6 +4,8 @@ This is primarily a vibe coded project using Claude Sonnet 5. The goal of this p
 
 Every week is manually created by the Admin of the site. Each week is automatically populated by utilizing ESPN's API. The scores are updated 15 minutes on Saturday, however, the scores are only updates once every 12 hours for the rest of the week.
 
+The rest of this README needs to be updated, as the project is still being worked on as of 2026-09-13. Once when the project is at a final state, this comment will be removed. 
+
 - **Backend:** Node.js + Express + SQLite (via `better-sqlite3`) — a single
   file database, no separate DB server to run or maintain.
 - **Frontend:** Server-rendered pages (EJS) + a little vanilla JS. No build
