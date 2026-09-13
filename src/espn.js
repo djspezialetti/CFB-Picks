@@ -42,12 +42,24 @@ function parseEvent(event) {
     espnEventId: event.id,
     homeTeam: home && home.team ? home.team.displayName : 'TBD',
     awayTeam: away && away.team ? away.team.displayName : 'TBD',
+    homeLogo: getTeamLogo(home),
+    awayLogo: getTeamLogo(away),
     startTime: event.date, // ISO 8601 already
     status,
     homeScore,
     awayScore,
     winner,
   };
+}
+
+// ESPN sometimes puts a direct "logo" field on the team, and sometimes
+// only a "logos" array of {href, ...} objects - check both.
+function getTeamLogo(competitor) {
+  const team = competitor && competitor.team;
+  if (!team) return null;
+  if (team.logo) return team.logo;
+  if (Array.isArray(team.logos) && team.logos.length > 0) return team.logos[0].href;
+  return null;
 }
 
 module.exports = { fetchScoreboard };
