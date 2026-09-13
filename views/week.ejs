@@ -21,7 +21,10 @@
         data-side="away"
         <%= g.locked ? 'disabled' : '' %>
       >
-        <span><%= g.away_team %></span>
+        <span class="team-name">
+          <% if (g.away_logo) { %><img class="team-logo" src="<%= g.away_logo %>" alt="" /><% } %>
+          <%= g.away_team %>
+        </span>
         <% if (g.away_score !== null) { %><span class="team-score"><%= g.away_score %></span><% } %>
       </button>
 
@@ -40,7 +43,10 @@
         data-side="home"
         <%= g.locked ? 'disabled' : '' %>
       >
-        <span><%= g.home_team %></span>
+        <span class="team-name">
+          <% if (g.home_logo) { %><img class="team-logo" src="<%= g.home_logo %>" alt="" /><% } %>
+          <%= g.home_team %>
+        </span>
         <% if (g.home_score !== null) { %><span class="team-score"><%= g.home_score %></span><% } %>
       </button>
     </div>
