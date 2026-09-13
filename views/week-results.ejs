@@ -1,9 +1,9 @@
-<%- include('partials/header', { title: week.label + ' results' }) %>
+<%- include('partials/header', { title: week.label + ' Results' }) %>
 
 <h1><%= week.label %> results</h1>
 <p class="lede">
-  <%= gamesFinal %> of <%= gamesTotal %> games final ·
-  <% if (winners.length === 0) { %>no winner yet<% } %>
+  <%= gamesFinal %> of <%= gamesTotal %> Games Competed ·
+  <% if (winners.length === 0) { %>No Winner Yet. Check back soon!<% } %>
 </p>
 
 <div class="week-tabs">
