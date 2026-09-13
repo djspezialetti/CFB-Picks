@@ -186,8 +186,8 @@ p.lede { color: var(--muted); margin-top: 0; }
 }
 
 .team-logo {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   flex: none;
 }
