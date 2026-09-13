@@ -1,8 +1,8 @@
 <%- include('partials/header', { title: 'Log in' }) %>
 
 <div class="auth-card">
-  <h1>Welcome back</h1>
-  <p class="lede">Log in to make your picks.</p>
+  <h1>Welcome Back, Champ!</h1>
+  <p class="lede">Log in to make your picks!</p>
 
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
 
@@ -15,7 +15,7 @@
       <label for="password">Password</label>
       <input type="password" id="password" name="password" autocomplete="current-password" required />
     </div>
-    <button class="btn" type="submit">Log in</button>
+    <button class="btn" type="submit">Log In</button>
   </form>
 
   <p class="auth-switch">New here? <a href="/register">Create an account</a></p>
