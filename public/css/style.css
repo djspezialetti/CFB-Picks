@@ -178,6 +178,20 @@ p.lede { color: var(--muted); margin-top: 0; }
 .team-btn.wrong { opacity: 0.55; }
 .team-btn:disabled { cursor: default; }
 
+.team-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.team-logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex: none;
+}
+
 .team-score {
   font-family: var(--font-display);
   font-size: 20px;
