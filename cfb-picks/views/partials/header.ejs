@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title + ' — The Pick \'Em Pool' : 'The Pick \'Em Pool' %></title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="/" class="brand">Saturday<span class="brand-accent">Slate</span></a>
+      <% if (currentUser) { %>
+        <nav class="topnav">
+          <a href="/">Picks</a>
+          <a href="/standings">Standings</a>
+          <% if (currentUser.isAdmin) { %><a href="/admin">Admin</a><% } %>
+          <span>Hi, <%= currentUser.name %></span>
+          <form method="POST" action="/logout"><button class="linklike" type="submit">Log out</button></form>
+        </nav>
+      <% } %>
+    </div>
+  </div>
+  <div class="wrap">

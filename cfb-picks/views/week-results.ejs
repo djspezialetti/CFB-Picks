@@ -1,0 +1,33 @@
+<%- include('partials/header', { title: week.label + ' results' }) %>
+
+<h1><%= week.label %> results</h1>
+<p class="lede">
+  <%= gamesFinal %> of <%= gamesTotal %> games final ·
+  <% if (winners.length === 0) { %>no winner yet<% } %>
+</p>
+
+<div class="week-tabs">
+  <% weeks.forEach(function(w) { %>
+    <a href="/weeks/<%= w.id %>/results" class="<%= w.id === week.id ? 'active' : '' %>"><%= w.label %></a>
+  <% }) %>
+</div>
+
+<table class="standings">
+  <thead>
+    <tr><th></th><th>Player</th><th>Correct</th><th>Out of</th></tr>
+  </thead>
+  <tbody>
+    <% results.forEach(function(r, i) { %>
+      <tr>
+        <td class="rank"><%= i + 1 %></td>
+        <td><%= r.name %><%= winners.includes(r.userId) ? ' 🏆' : '' %></td>
+        <td><%= r.correct %></td>
+        <td><%= r.totalGames %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<p><a href="/weeks/<%= week.id %>">&larr; Back to matchups</a></p>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,32 @@
+<%- include('partials/header', { title: 'Create account' }) %>
+
+<div class="auth-card">
+  <h1>Join the pool</h1>
+  <p class="lede">Pick a username and password.</p>
+
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+
+  <form method="POST" action="/register">
+    <div class="field">
+      <label for="name">Your name</label>
+      <input type="text" id="name" name="name" value="<%= form.name || '' %>" placeholder="What shows up on the leaderboard" required />
+    </div>
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="<%= form.username || '' %>" autocomplete="username" required />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="new-password" minlength="6" required />
+    </div>
+    <div class="field">
+      <label for="confirmPassword">Confirm password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" minlength="6" required />
+    </div>
+    <button class="btn" type="submit">Create account</button>
+  </form>
+
+  <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+</div>
+
+<%- include('partials/footer') %>

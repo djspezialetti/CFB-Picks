@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Picks' }) %>
+
+<h1>No matchups yet</h1>
+<p class="lede">
+  <% if (currentUser && currentUser.isAdmin) { %>
+    Head to <a href="/admin">Admin</a> to pull this week's FBS games from ESPN.
+  <% } else { %>
+    Nothing's been loaded for this week yet — check back soon.
+  <% } %>
+</p>
+
+<%- include('partials/footer') %>

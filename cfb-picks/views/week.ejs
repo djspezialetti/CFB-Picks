@@ -1,0 +1,82 @@
+<%- include('partials/header', { title: week.label }) %>
+
+<h1><%= week.label %></h1>
+<p class="lede"><%= week.season_year %> season · <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
+
+<div class="week-tabs">
+  <% weeks.forEach(function(w) { %>
+    <a href="/weeks/<%= w.id %>" class="<%= w.id === week.id ? 'active' : '' %>"><%= w.label %></a>
+  <% }) %>
+</div>
+
+<% if (games.length === 0) { %>
+  <p>No games loaded for this week yet.</p>
+<% } %>
+
+<div id="matchups">
+  <% games.forEach(function(g) { %>
+    <div class="matchup" data-game-id="<%= g.id %>">
+      <button
+        class="team-btn away <%= g.myPick === 'away' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'away' ? 'correct' : 'wrong') : '' %>"
+        data-side="away"
+        <%= g.locked ? 'disabled' : '' %>
+      >
+        <span><%= g.away_team %></span>
+        <% if (g.away_score !== null) { %><span class="team-score"><%= g.away_score %></span><% } %>
+      </button>
+
+      <div class="matchup-mid">
+        <% if (g.status === 'final') { %>
+          <span class="status-final">FINAL</span>
+        <% } else if (g.status === 'in_progress') { %>
+          <span class="status-live">LIVE</span>
+        <% } else { %>
+          <span class="kickoff"><%= new Date(g.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %></span>
+        <% } %>
+      </div>
+
+      <button
+        class="team-btn home <%= g.myPick === 'home' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'home' ? 'correct' : 'wrong') : '' %>"
+        data-side="home"
+        <%= g.locked ? 'disabled' : '' %>
+      >
+        <span><%= g.home_team %></span>
+        <% if (g.home_score !== null) { %><span class="team-score"><%= g.home_score %></span><% } %>
+      </button>
+    </div>
+  <% }) %>
+</div>
+
+<h2>Everyone's picks</h2>
+<% if (!canViewOthers) { %>
+  <p class="locked-note">Make all of your picks for this week (or wait for the first kickoff) to see how everyone else picked.</p>
+<% } else if (grid && grid.games.length > 0) { %>
+  <div class="grid-scroll">
+    <table class="pick-grid">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <% grid.games.forEach(function(g) { %>
+            <th><%= g.away_team.split(' ').pop() %> @ <%= g.home_team.split(' ').pop() %></th>
+          <% }) %>
+        </tr>
+      </thead>
+      <tbody>
+        <% grid.users.forEach(function(u) { %>
+          <tr>
+            <td><%= u.name %></td>
+            <% u.picks.forEach(function(p, i) { %>
+              <% const g = grid.games[i]; %>
+              <% const label = p.side ? (p.side === 'home' ? g.home_team.split(' ').pop() : g.away_team.split(' ').pop()) : '—'; %>
+              <td class="<%= p.correct === true ? 'pick-correct' : p.correct === false ? 'pick-wrong' : '' %>"><%= label %></td>
+            <% }) %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<script src="/js/picks.js"></script>
+
+<%- include('partials/footer') %>

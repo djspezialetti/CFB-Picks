@@ -1,0 +1,48 @@
+<%- include('partials/header', { title: 'Standings' }) %>
+
+<h1>Season standings</h1>
+<p class="lede"><%= seasonYear %> regular season · ranked by weeks won</p>
+
+<% if (seasons.length > 1) { %>
+  <div class="week-tabs">
+    <% seasons.forEach(function(y) { %>
+      <a href="/standings?season=<%= y %>" class="<%= y === seasonYear ? 'active' : '' %>"><%= y %></a>
+    <% }) %>
+  </div>
+<% } %>
+
+<% if (standings.length === 0) { %>
+  <p>No completed weeks yet this season.</p>
+<% } else { %>
+  <table class="standings">
+    <thead>
+      <tr><th></th><th>Player</th><th>Weeks won</th><th>Total correct picks</th></tr>
+    </thead>
+    <tbody>
+      <% standings.forEach(function(s, i) { %>
+        <tr>
+          <td class="rank"><%= i + 1 %></td>
+          <td><%= s.name %></td>
+          <td><%= s.weeksWon %></td>
+          <td><%= s.totalCorrect %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
+<h2>Week by week</h2>
+<% if (weekSummaries.length === 0) { %>
+  <p class="lede">No weeks have final scores yet.</p>
+<% } else { %>
+  <ul class="week-summary-list">
+    <% weekSummaries.slice().reverse().forEach(function(w) { %>
+      <li>
+        <span class="wk-label"><a href="/weeks/<%= w.weekId %>/results"><%= w.label %></a><%= w.complete ? '' : ' (in progress)' %></span>
+        <span class="wk-winners"><%= w.winners.length ? w.winners.join(', ') : '—' %></span>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<%- include('partials/footer') %>
