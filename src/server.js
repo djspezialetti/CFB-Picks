@@ -57,4 +57,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`CFB Picks running at http://localhost:${PORT}`);
+  require('./scheduler').start();
 });
