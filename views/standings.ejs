@@ -1,7 +1,7 @@
 <%- include('partials/header', { title: 'Standings' }) %>
 
-<h1>Season standings</h1>
-<p class="lede"><%= seasonYear %> regular season · ranked by weeks won</p>
+<h1>Season Standings</h1>
+<p class="lede"><%= seasonYear %> Regular Season · Ranked by Weeks Won</p>
 
 <% if (seasons.length > 1) { %>
   <div class="week-tabs">
@@ -31,9 +31,9 @@
   </table>
 <% } %>
 
-<h2>Week by week</h2>
+<h2>Week by Week</h2>
 <% if (weekSummaries.length === 0) { %>
-  <p class="lede">No weeks have final scores yet.</p>
+  <p class="lede">No Weeks have Final Scores Yet.</p>
 <% } else { %>
   <ul class="week-summary-list">
     <% weekSummaries.slice().reverse().forEach(function(w) { %>
