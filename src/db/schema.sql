@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS games (
   espn_event_id  TEXT UNIQUE,
   home_team      TEXT NOT NULL,
   away_team      TEXT NOT NULL,
+  home_logo      TEXT,
+  away_logo      TEXT,
   home_score     INTEGER,
   away_score     INTEGER,
   start_time     TEXT NOT NULL, -- ISO 8601
