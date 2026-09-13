@@ -30,11 +30,13 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
   const events = await espn.fetchScoreboard({ year: seasonYear, seasonType, week: weekNumber });
 
   const upsert = db.prepare(`
-    INSERT INTO games (week_id, espn_event_id, home_team, away_team, home_score, away_score, start_time, status, winner)
-    VALUES (@week_id, @espn_event_id, @home_team, @away_team, @home_score, @away_score, @start_time, @status, @winner)
+    INSERT INTO games (week_id, espn_event_id, home_team, away_team, home_logo, away_logo, home_score, away_score, start_time, status, winner)
+    VALUES (@week_id, @espn_event_id, @home_team, @away_team, @home_logo, @away_logo, @home_score, @away_score, @start_time, @status, @winner)
     ON CONFLICT(espn_event_id) DO UPDATE SET
       home_team = excluded.home_team,
       away_team = excluded.away_team,
+      home_logo = excluded.home_logo,
+      away_logo = excluded.away_logo,
       home_score = excluded.home_score,
       away_score = excluded.away_score,
       start_time = excluded.start_time,
@@ -52,6 +54,8 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
       espn_event_id: e.espnEventId,
       home_team: e.homeTeam,
       away_team: e.awayTeam,
+      home_logo: e.homeLogo,
+      away_logo: e.awayLogo,
       home_score: e.homeScore,
       away_score: e.awayScore,
       start_time: e.startTime,
