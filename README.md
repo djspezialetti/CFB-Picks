@@ -1,9 +1,8 @@
-# SaturdaySlate — College Football Pick 'Em Pool
+# College Football Pick 'Ems Website
 
-A small self-hosted app for a group pool where everyone picks the winner of
-each FBS matchup every week. Replaces the manual "Google Doc + text thread"
-workflow with accounts, a live pick grid, and automatic weekly/season
-standings.
+This is primarily a vibe coded project using Claude Sonnet 5. The goal of this project is to help ease/automate the process for my friend's weekly College Football Picks for the FBS teams during the regular season, bowl games, and CFB Playoffs. 
+
+Every week is manually created by the Admin of the site. Each week is automatically populated by utilizing ESPN's API. The scores are updated 15 minutes on Saturday, however, the scores are only updates once every 12 hours for the rest of the week.
 
 - **Backend:** Node.js + Express + SQLite (via `better-sqlite3`) — a single
   file database, no separate DB server to run or maintain.
