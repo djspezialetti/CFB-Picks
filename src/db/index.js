@@ -14,4 +14,18 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);
 
+// --- Lightweight migrations -------------------------------------------
+// CREATE TABLE IF NOT EXISTS in schema.sql won't add new columns to a
+// table that already exists (e.g. on an already-deployed database), so
+// new columns get added here instead. Safe to run on every boot.
+function ensureColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+ensureColumn('games', 'home_logo', 'TEXT');
+ensureColumn('games', 'away_logo', 'TEXT');
+
 module.exports = db;
