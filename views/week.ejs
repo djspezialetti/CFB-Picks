@@ -1,7 +1,7 @@
 <%- include('partials/header', { title: week.label }) %>
 
 <h1><%= week.label %></h1>
-<p class="lede"><%= week.season_year %> Season · There are: <%= games.length %> Games this Week<%= games.length === 1 %></p>
+<p class="lede"><%= week.season_year %> Season · There are: <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
 
 <div class="week-tabs">
   <% weeks.forEach(function(w) { %>
