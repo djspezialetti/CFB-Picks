@@ -1,7 +1,7 @@
 <%- include('partials/header', { title: week.label }) %>
 
 <h1><%= week.label %></h1>
-<p class="lede"><%= week.season_year %> Season · There are: <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
+<p class="lede"><%= week.season_year %> Season · There are <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
 
 <div class="week-tabs">
   <% weeks.forEach(function(w) { %>
@@ -14,8 +14,14 @@
 <% } %>
 
 <div id="matchups">
+  <% let lastConference = null; %>
   <% games.forEach(function(g) { %>
+    <% if (g.conference !== lastConference) { %>
+      <h2 class="conference-heading"><%= g.conference || 'Other' %></h2>
+      <% lastConference = g.conference; %>
+    <% } %>
     <div class="matchup" data-game-id="<%= g.id %>">
+      <% if (g.spread) { %><div class="matchup-spread"><%= g.spread %></div><% } %>
       <button
         class="team-btn away <%= g.myPick === 'away' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'away' ? 'correct' : 'wrong') : '' %>"
         data-side="away"
@@ -23,7 +29,10 @@
       >
         <span class="team-name">
           <% if (g.away_logo) { %><img class="team-logo" src="<%= g.away_logo %>" alt="" /><% } %>
-          <%= g.away_team %>
+          <span>
+            <%= g.away_team %>
+            <% if (g.away_record) { %><span class="team-record"><%= g.away_record %><%= g.away_conf_record ? ' (' + g.away_conf_record + ')' : '' %></span><% } %>
+          </span>
         </span>
         <% if (g.away_score !== null) { %><span class="team-score"><%= g.away_score %></span><% } %>
       </button>
@@ -36,6 +45,9 @@
         <% } else { %>
           <span class="kickoff"><%= new Date(g.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %></span>
         <% } %>
+        <% if (g.location) { %>
+          <span class="venue"><%= g.location %><%= g.is_neutral_site ? ' · Neutral site' : '' %></span>
+        <% } %>
       </div>
 
       <button
@@ -45,7 +57,10 @@
       >
         <span class="team-name">
           <% if (g.home_logo) { %><img class="team-logo" src="<%= g.home_logo %>" alt="" /><% } %>
-          <%= g.home_team %>
+          <span>
+            <%= g.home_team %>
+            <% if (g.home_record) { %><span class="team-record"><%= g.home_record %><%= g.home_conf_record ? ' (' + g.home_conf_record + ')' : '' %></span><% } %>
+          </span>
         </span>
         <% if (g.home_score !== null) { %><span class="team-score"><%= g.home_score %></span><% } %>
       </button>
