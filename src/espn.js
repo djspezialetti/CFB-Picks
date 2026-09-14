@@ -52,6 +52,8 @@ function parseEvent(event) {
     awayRecord: getRecord(away, 'total'),
     homeConfRecord: getRecord(home, 'vsconf'),
     awayConfRecord: getRecord(away, 'vsconf'),
+    homeRank: getRank(home),
+    awayRank: getRank(away),
     spread: getSpread(comp),
     location: getLocation(comp),
     neutralSite: !!(comp && comp.neutralSite),
@@ -71,6 +73,20 @@ function getTeamLogo(competitor) {
   if (team.logo) return team.logo;
   if (Array.isArray(team.logos) && team.logos.length > 0) return team.logos[0].href;
   return null;
+}
+
+// competitor.curatedRank is ESPN's AP-style top-25 ranking for the team,
+// e.g. { current: 5 }. ESPN's convention is that 99 (or occasionally a
+// missing/undefined value) means "unranked" - handled defensively here
+// since the exact shape (plain number vs. {current}) has been known to
+// vary by endpoint.
+function getRank(competitor) {
+  const cr = competitor && competitor.curatedRank;
+  if (cr === undefined || cr === null) return null;
+  const rank = typeof cr === 'object' ? cr.current : cr;
+  if (rank === undefined || rank === null) return null;
+  if (rank >= 99) return null; // ESPN's "not ranked" sentinel
+  return rank;
 }
 
 // competitor.records is normally an array like:
