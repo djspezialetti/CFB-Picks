@@ -1,5 +1,6 @@
 const db = require('./db');
 const espn = require('./espn');
+const { CONFERENCES, conferenceOrder } = require('./conferences');
 
 // ---- Weeks & games -------------------------------------------------------
 
@@ -23,20 +24,83 @@ function getWeek(weekId) {
   return db.prepare('SELECT * FROM weeks WHERE id = ?').get(weekId);
 }
 
+// Conference membership rarely changes mid-season, so the team->conference
+// lookup (which takes ~11 small API calls to build) is cached in memory
+// rather than rebuilt on every single sync - important since this app can
+// auto-refresh scores every 15 minutes during game day.
+let teamConferenceCache = null; // { map: Map<teamName, conferenceName>, builtAt: number }
+const TEAM_MAP_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+async function getTeamConferenceMap() {
+  const now = Date.now();
+  if (teamConferenceCache && now - teamConferenceCache.builtAt < TEAM_MAP_TTL_MS) {
+    return teamConferenceCache.map;
+  }
+
+  const map = new Map();
+  for (const conf of CONFERENCES) {
+    try {
+      const teamNames = await espn.fetchConferenceTeams(conf.espnGroupId);
+      for (const name of teamNames) {
+        if (!map.has(name)) map.set(name, conf.name);
+      }
+    } catch (err) {
+      // A misconfigured/renamed conference ID shouldn't take down the
+      // whole sync - that conference's teams just won't be tagged, and
+      // their games will fall back to "Other" below.
+      console.error(`[espn] Failed to fetch teams for ${conf.name} (group ${conf.espnGroupId}):`, err.message);
+    }
+  }
+  teamConferenceCache = { map, builtAt: now };
+  return map;
+}
+
 // Pulls the matchups (and, for past weeks, scores) from ESPN and
 // upserts them into the games table for the given week.
+//
+// Each game is tagged with the HOME team's conference for display
+// grouping (see src/conferences.js for the section order). A game
+// between two different conferences (e.g. an ACC team hosting a Big Ten
+// team) is filed under the home team's conference.
 async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label }) {
   const week = getOrCreateWeek({ seasonYear, seasonType, weekNumber, label });
-  const events = await espn.fetchScoreboard({ year: seasonYear, seasonType, week: weekNumber });
+
+  const [events, teamConferenceMap] = await Promise.all([
+    espn.fetchScoreboard({ year: seasonYear, seasonType, week: weekNumber }),
+    getTeamConferenceMap(),
+  ]);
+
+  const taggedEvents = events.map((e) => ({
+    ...e,
+    conference: teamConferenceMap.get(e.homeTeam) || teamConferenceMap.get(e.awayTeam) || 'Other',
+  }));
 
   const upsert = db.prepare(`
-    INSERT INTO games (week_id, espn_event_id, home_team, away_team, home_logo, away_logo, home_score, away_score, start_time, status, winner)
-    VALUES (@week_id, @espn_event_id, @home_team, @away_team, @home_logo, @away_logo, @home_score, @away_score, @start_time, @status, @winner)
+    INSERT INTO games (
+      week_id, espn_event_id, home_team, away_team, home_logo, away_logo, conference,
+      home_record, away_record, home_conf_record, away_conf_record, spread,
+      location, is_neutral_site,
+      home_score, away_score, start_time, status, winner
+    )
+    VALUES (
+      @week_id, @espn_event_id, @home_team, @away_team, @home_logo, @away_logo, @conference,
+      @home_record, @away_record, @home_conf_record, @away_conf_record, @spread,
+      @location, @is_neutral_site,
+      @home_score, @away_score, @start_time, @status, @winner
+    )
     ON CONFLICT(espn_event_id) DO UPDATE SET
       home_team = excluded.home_team,
       away_team = excluded.away_team,
       home_logo = excluded.home_logo,
       away_logo = excluded.away_logo,
+      conference = excluded.conference,
+      home_record = excluded.home_record,
+      away_record = excluded.away_record,
+      home_conf_record = excluded.home_conf_record,
+      away_conf_record = excluded.away_conf_record,
+      spread = excluded.spread,
+      location = excluded.location,
+      is_neutral_site = excluded.is_neutral_site,
       home_score = excluded.home_score,
       away_score = excluded.away_score,
       start_time = excluded.start_time,
@@ -49,13 +113,21 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
   });
 
   txn(
-    events.map((e) => ({
+    taggedEvents.map((e) => ({
       week_id: week.id,
       espn_event_id: e.espnEventId,
       home_team: e.homeTeam,
       away_team: e.awayTeam,
       home_logo: e.homeLogo,
       away_logo: e.awayLogo,
+      conference: e.conference,
+      home_record: e.homeRecord,
+      away_record: e.awayRecord,
+      home_conf_record: e.homeConfRecord,
+      away_conf_record: e.awayConfRecord,
+      spread: e.spread,
+      location: e.location,
+      is_neutral_site: e.neutralSite ? 1 : 0,
       home_score: e.homeScore,
       away_score: e.awayScore,
       start_time: e.startTime,
@@ -64,7 +136,7 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
     }))
   );
 
-  return { week, gameCount: events.length };
+  return { week, gameCount: taggedEvents.length };
 }
 
 // Re-fetches only scores/status for games already stored for a week
@@ -80,10 +152,15 @@ async function refreshScoresForWeek(weekId) {
   });
 }
 
+// Games are grouped for display by conference (see src/conferences.js
+// for the display order), then by kickoff time within each conference.
 function listGamesForWeek(weekId) {
-  return db
-    .prepare('SELECT * FROM games WHERE week_id = ? ORDER BY start_time ASC')
-    .all(weekId);
+  const games = db.prepare('SELECT * FROM games WHERE week_id = ?').all(weekId);
+  return games.sort((a, b) => {
+    const confDiff = conferenceOrder(a.conference) - conferenceOrder(b.conference);
+    if (confDiff !== 0) return confDiff;
+    return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+  });
 }
 
 // ---- Picks ----------------------------------------------------------------
