@@ -1,6 +1,6 @@
 const db = require('./db');
 const espn = require('./espn');
-const { CONFERENCES, conferenceOrder } = require('./conferences');
+const { CONFERENCES, conferenceOrder, conferenceNameById } = require('./conferences');
 
 // ---- Weeks & games -------------------------------------------------------
 
@@ -24,55 +24,25 @@ function getWeek(weekId) {
   return db.prepare('SELECT * FROM weeks WHERE id = ?').get(weekId);
 }
 
-// Conference membership rarely changes mid-season, so the team->conference
-// lookup (which takes ~11 small API calls to build) is cached in memory
-// rather than rebuilt on every single sync - important since this app can
-// auto-refresh scores every 15 minutes during game day.
-let teamConferenceCache = null; // { map: Map<teamName, conferenceName>, builtAt: number }
-const TEAM_MAP_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
-
-async function getTeamConferenceMap() {
-  const now = Date.now();
-  if (teamConferenceCache && now - teamConferenceCache.builtAt < TEAM_MAP_TTL_MS) {
-    return teamConferenceCache.map;
-  }
-
-  const map = new Map();
-  for (const conf of CONFERENCES) {
-    try {
-      const teamNames = await espn.fetchConferenceTeams(conf.espnGroupId);
-      for (const name of teamNames) {
-        if (!map.has(name)) map.set(name, conf.name);
-      }
-    } catch (err) {
-      // A misconfigured/renamed conference ID shouldn't take down the
-      // whole sync - that conference's teams just won't be tagged, and
-      // their games will fall back to "Other" below.
-      console.error(`[espn] Failed to fetch teams for ${conf.name} (group ${conf.espnGroupId}):`, err.message);
-    }
-  }
-  teamConferenceCache = { map, builtAt: now };
-  return map;
-}
-
 // Pulls the matchups (and, for past weeks, scores) from ESPN and
 // upserts them into the games table for the given week.
 //
 // Each game is tagged with the HOME team's conference for display
-// grouping (see src/conferences.js for the section order). A game
-// between two different conferences (e.g. an ACC team hosting a Big Ten
-// team) is filed under the home team's conference.
+// grouping (see src/conferences.js for the section order), using the
+// conferenceId ESPN already attaches to every team - no extra request
+// needed. A game between two different conferences (e.g. an ACC team
+// hosting a Big Ten team) is filed under the home team's conference.
 async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label }) {
   const week = getOrCreateWeek({ seasonYear, seasonType, weekNumber, label });
 
-  const [events, teamConferenceMap] = await Promise.all([
-    espn.fetchScoreboard({ year: seasonYear, seasonType, week: weekNumber }),
-    getTeamConferenceMap(),
-  ]);
+  const events = await espn.fetchScoreboard({ year: seasonYear, seasonType, week: weekNumber });
 
   const taggedEvents = events.map((e) => ({
     ...e,
-    conference: teamConferenceMap.get(e.homeTeam) || teamConferenceMap.get(e.awayTeam) || 'Other',
+    conference:
+      conferenceNameById(e.homeConferenceId) ||
+      conferenceNameById(e.awayConferenceId) ||
+      'Other',
   }));
 
   const upsert = db.prepare(`
