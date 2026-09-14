@@ -1,18 +1,35 @@
-// Thin wrapper around ESPN's public (unofficial) scoreboard endpoint for
-// college football. No API key is required. This endpoint can change or
-// disappear without notice since it isn't officially documented by ESPN.
-const BASE_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard';
+// Thin wrapper around ESPN's public (unofficial) endpoints for college
+// football. No API key is required. These endpoints can change or
+// disappear without notice since they aren't officially documented by ESPN.
+const SCOREBOARD_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard';
+const TEAMS_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams';
 
-// groups=80 limits results to the FBS classification.
-// limit is set high so a full slate of FBS games comes back in one page.
+// groups=80 means "all of FBS" - this returns every FBS game for the week
+// in one call (conference tagging is done separately, see conferences.js
+// and services.js's team-to-conference map).
 async function fetchScoreboard({ year, seasonType = 2, week }) {
-  const url = `${BASE_URL}?year=${year}&seasontype=${seasonType}&week=${week}&groups=80&limit=400`;
+  const url = `${SCOREBOARD_URL}?year=${year}&seasontype=${seasonType}&week=${week}&groups=80&limit=400`;
   const res = await fetch(url, { headers: { 'User-Agent': 'cfb-picks-app/1.0' } });
   if (!res.ok) {
     throw new Error(`ESPN scoreboard request failed: ${res.status} ${res.statusText}`);
   }
   const data = await res.json();
   return (data.events || []).map(parseEvent);
+}
+
+// Returns the list of team display names that officially belong to the
+// given conference (via its ESPN "groups" ID) - used to build a
+// team-name -> conference lookup, since the scoreboard endpoint itself
+// doesn't reliably label which conference each team belongs to.
+async function fetchConferenceTeams(groupId) {
+  const url = `${TEAMS_URL}?groups=${groupId}&limit=50`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'cfb-picks-app/1.0' } });
+  if (!res.ok) {
+    throw new Error(`ESPN teams request failed: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  const teams = (data && data.sports && data.sports[0] && data.sports[0].leagues && data.sports[0].leagues[0] && data.sports[0].leagues[0].teams) || [];
+  return teams.map((t) => t.team && t.team.displayName).filter(Boolean);
 }
 
 function parseEvent(event) {
@@ -44,6 +61,13 @@ function parseEvent(event) {
     awayTeam: away && away.team ? away.team.displayName : 'TBD',
     homeLogo: getTeamLogo(home),
     awayLogo: getTeamLogo(away),
+    homeRecord: getRecord(home, 'total'),
+    awayRecord: getRecord(away, 'total'),
+    homeConfRecord: getRecord(home, 'vsconf'),
+    awayConfRecord: getRecord(away, 'vsconf'),
+    spread: getSpread(comp),
+    location: getLocation(comp),
+    neutralSite: !!(comp && comp.neutralSite),
     startTime: event.date, // ISO 8601 already
     status,
     homeScore,
@@ -62,4 +86,45 @@ function getTeamLogo(competitor) {
   return null;
 }
 
-module.exports = { fetchScoreboard };
+// competitor.records is normally an array like:
+//   [{ type: 'total', summary: '3-0' }, { type: 'vsconf', summary: '1-0' }, ...]
+// `kind` is 'total' for overall record, 'vsconf' for conference record.
+// Falls back to matching by name text if `type` isn't present, since
+// ESPN's payload shape has shifted before.
+function getRecord(competitor, kind) {
+  const records = competitor && competitor.records;
+  if (!Array.isArray(records)) return null;
+
+  const byType = records.find((r) => r.type === kind);
+  if (byType && byType.summary) return byType.summary;
+
+  if (kind === 'vsconf') {
+    const byName = records.find((r) => /conf/i.test(r.name || '') || /conf/i.test(r.abbreviation || ''));
+    if (byName && byName.summary) return byName.summary;
+  } else {
+    const byName = records.find((r) => /total|overall/i.test(r.name || ''));
+    if (byName && byName.summary) return byName.summary;
+  }
+  return null;
+}
+
+// Betting odds aren't always present (smaller games, or lines that
+// haven't posted yet). `details` is ESPN's own human-readable summary,
+// e.g. "OSU -14.5" - using that directly avoids needing to figure out
+// which team the raw spread number is relative to.
+function getSpread(comp) {
+  const odds = comp && comp.odds;
+  if (!Array.isArray(odds) || odds.length === 0) return null;
+  return odds[0].details || null;
+}
+
+// Venue city/state, e.g. "Arlington, TX" - used to show where a game is
+// being played, which matters most for neutral-site games.
+function getLocation(comp) {
+  const venue = comp && comp.venue;
+  const address = venue && venue.address;
+  if (!address || !address.city) return null;
+  return address.state ? `${address.city}, ${address.state}` : address.city;
+}
+
+module.exports = { fetchScoreboard, fetchConferenceTeams };
