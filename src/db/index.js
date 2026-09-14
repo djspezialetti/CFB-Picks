@@ -35,5 +35,7 @@ ensureColumn('games', 'away_conf_record', 'TEXT');
 ensureColumn('games', 'spread', 'TEXT');
 ensureColumn('games', 'location', 'TEXT');
 ensureColumn('games', 'is_neutral_site', "INTEGER NOT NULL DEFAULT 0");
+ensureColumn('games', 'home_rank', 'INTEGER');
+ensureColumn('games', 'away_rank', 'INTEGER');
 
 module.exports = db;
