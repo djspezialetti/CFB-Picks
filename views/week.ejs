@@ -1,7 +1,7 @@
 <%- include('partials/header', { title: week.label }) %>
 
 <h1><%= week.label %></h1>
-<p class="lede"><%= week.season_year %> Season · There are <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
+<p class="lede"><%= week.season_year %> season · <%= games.length %> FBS matchup<%= games.length === 1 ? '' : 's' %></p>
 
 <div class="week-tabs">
   <% weeks.forEach(function(w) { %>
@@ -30,7 +30,7 @@
         <span class="team-name">
           <% if (g.away_logo) { %><img class="team-logo" src="<%= g.away_logo %>" alt="" /><% } %>
           <span>
-            <%= g.away_team %>
+            <% if (g.away_rank) { %><span class="team-rank">#<%= g.away_rank %></span><% } %><%= g.away_team %>
             <% if (g.away_record) { %><span class="team-record"><%= g.away_record %><%= g.away_conf_record ? ' (' + g.away_conf_record + ')' : '' %></span><% } %>
           </span>
         </span>
@@ -58,7 +58,7 @@
         <span class="team-name">
           <% if (g.home_logo) { %><img class="team-logo" src="<%= g.home_logo %>" alt="" /><% } %>
           <span>
-            <%= g.home_team %>
+            <% if (g.home_rank) { %><span class="team-rank">#<%= g.home_rank %></span><% } %><%= g.home_team %>
             <% if (g.home_record) { %><span class="team-record"><%= g.home_record %><%= g.home_conf_record ? ' (' + g.home_conf_record + ')' : '' %></span><% } %>
           </span>
         </span>
