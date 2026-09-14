@@ -48,13 +48,13 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
   const upsert = db.prepare(`
     INSERT INTO games (
       week_id, espn_event_id, home_team, away_team, home_logo, away_logo, conference,
-      home_record, away_record, home_conf_record, away_conf_record, spread,
+      home_record, away_record, home_conf_record, away_conf_record, home_rank, away_rank, spread,
       location, is_neutral_site,
       home_score, away_score, start_time, status, winner
     )
     VALUES (
       @week_id, @espn_event_id, @home_team, @away_team, @home_logo, @away_logo, @conference,
-      @home_record, @away_record, @home_conf_record, @away_conf_record, @spread,
+      @home_record, @away_record, @home_conf_record, @away_conf_record, @home_rank, @away_rank, @spread,
       @location, @is_neutral_site,
       @home_score, @away_score, @start_time, @status, @winner
     )
@@ -68,6 +68,8 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
       away_record = excluded.away_record,
       home_conf_record = excluded.home_conf_record,
       away_conf_record = excluded.away_conf_record,
+      home_rank = excluded.home_rank,
+      away_rank = excluded.away_rank,
       spread = excluded.spread,
       location = excluded.location,
       is_neutral_site = excluded.is_neutral_site,
@@ -95,6 +97,8 @@ async function syncWeekFromEspn({ seasonYear, seasonType = 2, weekNumber, label 
       away_record: e.awayRecord,
       home_conf_record: e.homeConfRecord,
       away_conf_record: e.awayConfRecord,
+      home_rank: e.homeRank,
+      away_rank: e.awayRank,
       spread: e.spread,
       location: e.location,
       is_neutral_site: e.neutralSite ? 1 : 0,
