@@ -184,6 +184,15 @@ p.lede { color: var(--muted); margin-top: 0; }
 }
 .team-btn.picked .team-record { color: rgba(8, 21, 14, 0.65); }
 
+.team-rank {
+  color: var(--amber);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 5px;
+}
+.team-btn.picked .team-rank { color: #08150E; }
+
 .team-btn {
   display: flex;
   align-items: center;
