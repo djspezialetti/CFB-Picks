@@ -27,5 +27,13 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn('games', 'home_logo', 'TEXT');
 ensureColumn('games', 'away_logo', 'TEXT');
+ensureColumn('games', 'conference', 'TEXT');
+ensureColumn('games', 'home_record', 'TEXT');
+ensureColumn('games', 'away_record', 'TEXT');
+ensureColumn('games', 'home_conf_record', 'TEXT');
+ensureColumn('games', 'away_conf_record', 'TEXT');
+ensureColumn('games', 'spread', 'TEXT');
+ensureColumn('games', 'location', 'TEXT');
+ensureColumn('games', 'is_neutral_site', "INTEGER NOT NULL DEFAULT 0");
 
 module.exports = db;
