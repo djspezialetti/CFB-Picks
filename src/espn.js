@@ -1,12 +1,12 @@
-// Thin wrapper around ESPN's public (unofficial) endpoints for college
-// football. No API key is required. These endpoints can change or
-// disappear without notice since they aren't officially documented by ESPN.
+// Thin wrapper around ESPN's public (unofficial) scoreboard endpoint for
+// college football. No API key is required. This endpoint can change or
+// disappear without notice since it isn't officially documented by ESPN.
 const SCOREBOARD_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard';
-const TEAMS_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams';
 
 // groups=80 means "all of FBS" - this returns every FBS game for the week
-// in one call (conference tagging is done separately, see conferences.js
-// and services.js's team-to-conference map).
+// in one call. Each team's own conferenceId (used for conference-section
+// grouping, see conferences.js) comes along for free in this same
+// response - no separate request needed.
 async function fetchScoreboard({ year, seasonType = 2, week }) {
   const url = `${SCOREBOARD_URL}?year=${year}&seasontype=${seasonType}&week=${week}&groups=80&limit=400`;
   const res = await fetch(url, { headers: { 'User-Agent': 'cfb-picks-app/1.0' } });
@@ -15,21 +15,6 @@ async function fetchScoreboard({ year, seasonType = 2, week }) {
   }
   const data = await res.json();
   return (data.events || []).map(parseEvent);
-}
-
-// Returns the list of team display names that officially belong to the
-// given conference (via its ESPN "groups" ID) - used to build a
-// team-name -> conference lookup, since the scoreboard endpoint itself
-// doesn't reliably label which conference each team belongs to.
-async function fetchConferenceTeams(groupId) {
-  const url = `${TEAMS_URL}?groups=${groupId}&limit=50`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'cfb-picks-app/1.0' } });
-  if (!res.ok) {
-    throw new Error(`ESPN teams request failed: ${res.status} ${res.statusText}`);
-  }
-  const data = await res.json();
-  const teams = (data && data.sports && data.sports[0] && data.sports[0].leagues && data.sports[0].leagues[0] && data.sports[0].leagues[0].teams) || [];
-  return teams.map((t) => t.team && t.team.displayName).filter(Boolean);
 }
 
 function parseEvent(event) {
@@ -61,6 +46,8 @@ function parseEvent(event) {
     awayTeam: away && away.team ? away.team.displayName : 'TBD',
     homeLogo: getTeamLogo(home),
     awayLogo: getTeamLogo(away),
+    homeConferenceId: home && home.team ? home.team.conferenceId : null,
+    awayConferenceId: away && away.team ? away.team.conferenceId : null,
     homeRecord: getRecord(home, 'total'),
     awayRecord: getRecord(away, 'total'),
     homeConfRecord: getRecord(home, 'vsconf'),
@@ -127,4 +114,4 @@ function getLocation(comp) {
   return address.state ? `${address.city}, ${address.state}` : address.city;
 }
 
-module.exports = { fetchScoreboard, fetchConferenceTeams };
+module.exports = { fetchScoreboard };
