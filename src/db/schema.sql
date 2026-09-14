@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS games (
   away_record       TEXT,
   home_conf_record  TEXT,
   away_conf_record  TEXT,
+  home_rank      INTEGER,
+  away_rank      INTEGER,
   spread         TEXT,
   location       TEXT,
   is_neutral_site INTEGER NOT NULL DEFAULT 0,
