@@ -175,6 +175,37 @@ p.lede { color: var(--muted); margin-top: 0; }
   margin-bottom: 2px;
 }
 
+.team-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 2px;
+}
+
+.picker-chip {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.picker-chip.is-you {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #08150E;
+  font-weight: 600;
+}
+
 .team-record {
   display: block;
   font-size: 12px;
@@ -251,28 +282,6 @@ p.lede { color: var(--muted); margin-top: 0; }
 .matchup-mid .status-live { color: var(--danger); font-weight: 600; }
 
 /* ---- Pick grid (everyone's picks) ---- */
-.grid-scroll { overflow-x: auto; margin-top: 8px; }
-table.pick-grid {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 14px;
-  min-width: 480px;
-}
-table.pick-grid th, table.pick-grid td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  white-space: nowrap;
-}
-table.pick-grid th {
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--muted);
-  font-size: 13px;
-}
-table.pick-grid td.pick-correct { color: var(--turf-bright); font-weight: 600; }
-table.pick-grid td.pick-wrong { color: var(--danger); }
-
 .locked-note {
   color: var(--muted);
   font-size: 14px;
@@ -404,3 +413,78 @@ table.admin-weeks th, table.admin-weeks td {
   .matchup-mid { padding: 4px 0; }
   h1 { font-size: 28px; }
 }
+
+/* ---- Picks board (Google-Doc-style grid: matchups x players) ---- */
+.board-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+table.board-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  min-width: 100%;
+}
+
+table.board-table th, table.board-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  white-space: nowrap;
+}
+
+table.board-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-raised);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--chalk);
+  z-index: 2;
+}
+table.board-table thead th.is-you { color: var(--amber); }
+
+/* First column (matchup) stays visible while scrolling horizontally
+   through players - the whole point of this page is comparing many
+   people at once, so this needs to stay put. */
+.board-matchup-col {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  text-align: left;
+  z-index: 1;
+  box-shadow: 2px 0 0 var(--line);
+}
+thead .board-matchup-col { z-index: 3; background: var(--surface-raised); }
+
+.board-matchup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--chalk);
+}
+.board-matchup img { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.board-at { color: var(--muted); font-size: 10px; }
+
+.board-conference-row td {
+  background: var(--surface-raised);
+  text-align: left;
+  font-family: var(--font-display);
+  color: var(--amber);
+  font-size: 14px;
+  padding: 8px 10px;
+  position: sticky;
+  left: 0;
+}
+
+.board-cell { background: var(--surface); }
+.board-cell.is-you { background: rgba(232, 163, 61, 0.08); }
+.board-cell.correct { background: rgba(79, 174, 121, 0.18); }
+.board-cell.wrong { background: rgba(217, 105, 95, 0.12); opacity: 0.7; }
+
+.board-pick-logo { width: 26px; height: 26px; object-fit: contain; }
+.board-dash { color: var(--muted); }
