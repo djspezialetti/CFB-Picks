@@ -1,0 +1,69 @@
+<%- include('partials/header', { title: week.label + ' Picks Board' }) %>
+
+<h1>Picks board</h1>
+<p class="lede"><%= week.label %> · <%= week.season_year %> season · everyone's picks at a glance</p>
+
+<div class="week-tabs">
+  <% weeks.forEach(function(w) { %>
+    <a href="/weeks/<%= w.id %>/board" class="<%= w.id === week.id ? 'active' : '' %>"><%= w.label %></a>
+  <% }) %>
+</div>
+
+<p><a href="/weeks/<%= week.id %>">&larr; Back to matchups</a></p>
+
+<% if (grid.games.length === 0) { %>
+  <p>No games loaded for this week yet.</p>
+<% } else { %>
+  <div class="board-scroll">
+    <table class="board-table">
+      <thead>
+        <tr>
+          <th class="board-matchup-col">Matchup</th>
+          <% grid.users.forEach(function(u) { %>
+            <th class="<%= currentUser && u.id === currentUser.id ? 'is-you' : '' %>"><%= u.name %></th>
+          <% }) %>
+        </tr>
+      </thead>
+      <tbody>
+        <% let lastConference = null; %>
+        <% grid.games.forEach(function(g, i) { %>
+          <% if (g.conference !== lastConference) { %>
+            <tr class="board-conference-row">
+              <td colspan="<%= grid.users.length + 1 %>"><%= g.conference || 'Other' %></td>
+            </tr>
+            <% lastConference = g.conference; %>
+          <% } %>
+          <tr>
+            <td class="board-matchup-col">
+              <div class="board-matchup">
+                <span class="board-team">
+                  <% if (g.away_logo) { %><img src="<%= g.away_logo %>" alt="" /><% } %>
+                  <%= g.away_team %>
+                </span>
+                <span class="board-at">@</span>
+                <span class="board-team">
+                  <% if (g.home_logo) { %><img src="<%= g.home_logo %>" alt="" /><% } %>
+                  <%= g.home_team %>
+                </span>
+              </div>
+            </td>
+            <% grid.users.forEach(function(u) { %>
+              <% const pick = u.picks[i]; %>
+              <% const logo = pick.side === 'home' ? g.home_logo : pick.side === 'away' ? g.away_logo : null; %>
+              <% const name = pick.side === 'home' ? g.home_team : pick.side === 'away' ? g.away_team : null; %>
+              <td class="board-cell <%= pick.correct === true ? 'correct' : pick.correct === false ? 'wrong' : '' %> <%= currentUser && u.id === currentUser.id ? 'is-you' : '' %>">
+                <% if (logo) { %>
+                  <img class="board-pick-logo" src="<%= logo %>" alt="<%= name %>" title="<%= name %>" />
+                <% } else { %>
+                  <span class="board-dash">—</span>
+                <% } %>
+              </td>
+            <% }) %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>
