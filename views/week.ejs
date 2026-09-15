@@ -22,20 +22,29 @@
     <% } %>
     <div class="matchup" data-game-id="<%= g.id %>">
       <% if (g.spread) { %><div class="matchup-spread"><%= g.spread %></div><% } %>
-      <button
-        class="team-btn away <%= g.myPick === 'away' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'away' ? 'correct' : 'wrong') : '' %>"
-        data-side="away"
-        <%= g.locked ? 'disabled' : '' %>
-      >
-        <span class="team-name">
-          <% if (g.away_logo) { %><img class="team-logo" src="<%= g.away_logo %>" alt="" /><% } %>
-          <span>
-            <% if (g.away_rank) { %><span class="team-rank">#<%= g.away_rank %></span><% } %><%= g.away_team %>
-            <% if (g.away_record) { %><span class="team-record"><%= g.away_record %><%= g.away_conf_record ? ' (' + g.away_conf_record + ')' : '' %></span><% } %>
+      <div class="team-col">
+        <button
+          class="team-btn away <%= g.myPick === 'away' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'away' ? 'correct' : 'wrong') : '' %>"
+          data-side="away"
+          <%= g.locked ? 'disabled' : '' %>
+        >
+          <span class="team-name">
+            <% if (g.away_logo) { %><img class="team-logo" src="<%= g.away_logo %>" alt="" /><% } %>
+            <span>
+              <% if (g.away_rank) { %><span class="team-rank">#<%= g.away_rank %></span><% } %><%= g.away_team %>
+              <% if (g.away_record) { %><span class="team-record"><%= g.away_record %><%= g.away_conf_record ? ' (' + g.away_conf_record + ')' : '' %></span><% } %>
+            </span>
           </span>
-        </span>
-        <% if (g.away_score !== null) { %><span class="team-score"><%= g.away_score %></span><% } %>
-      </button>
+          <% if (g.away_score !== null) { %><span class="team-score"><%= g.away_score %></span><% } %>
+        </button>
+        <% if (pickersByGame && pickersByGame[g.id]) { %>
+          <div class="pickers">
+            <% pickersByGame[g.id].away.forEach(function(name) { %>
+              <span class="picker-chip <%= name === currentUser.name ? 'is-you' : '' %>"><%= name %></span>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
 
       <div class="matchup-mid">
         <% if (g.status === 'final') { %>
@@ -50,52 +59,37 @@
         <% } %>
       </div>
 
-      <button
-        class="team-btn home <%= g.myPick === 'home' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'home' ? 'correct' : 'wrong') : '' %>"
-        data-side="home"
-        <%= g.locked ? 'disabled' : '' %>
-      >
-        <span class="team-name">
-          <% if (g.home_logo) { %><img class="team-logo" src="<%= g.home_logo %>" alt="" /><% } %>
-          <span>
-            <% if (g.home_rank) { %><span class="team-rank">#<%= g.home_rank %></span><% } %><%= g.home_team %>
-            <% if (g.home_record) { %><span class="team-record"><%= g.home_record %><%= g.home_conf_record ? ' (' + g.home_conf_record + ')' : '' %></span><% } %>
+      <div class="team-col">
+        <button
+          class="team-btn home <%= g.myPick === 'home' ? 'picked' : '' %> <%= g.status === 'final' && g.winner ? (g.winner === 'home' ? 'correct' : 'wrong') : '' %>"
+          data-side="home"
+          <%= g.locked ? 'disabled' : '' %>
+        >
+          <span class="team-name">
+            <% if (g.home_logo) { %><img class="team-logo" src="<%= g.home_logo %>" alt="" /><% } %>
+            <span>
+              <% if (g.home_rank) { %><span class="team-rank">#<%= g.home_rank %></span><% } %><%= g.home_team %>
+              <% if (g.home_record) { %><span class="team-record"><%= g.home_record %><%= g.home_conf_record ? ' (' + g.home_conf_record + ')' : '' %></span><% } %>
+            </span>
           </span>
-        </span>
-        <% if (g.home_score !== null) { %><span class="team-score"><%= g.home_score %></span><% } %>
-      </button>
+          <% if (g.home_score !== null) { %><span class="team-score"><%= g.home_score %></span><% } %>
+        </button>
+        <% if (pickersByGame && pickersByGame[g.id]) { %>
+          <div class="pickers">
+            <% pickersByGame[g.id].home.forEach(function(name) { %>
+              <span class="picker-chip <%= name === currentUser.name ? 'is-you' : '' %>"><%= name %></span>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
     </div>
   <% }) %>
 </div>
 
-<h2>Everyone's picks</h2>
 <% if (!canViewOthers) { %>
-  <p class="locked-note">Make all of your picks for this week (or wait for the first kickoff) to see how everyone else picked.</p>
-<% } else if (grid && grid.games.length > 0) { %>
-  <div class="grid-scroll">
-    <table class="pick-grid">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <% grid.games.forEach(function(g) { %>
-            <th><%= g.away_team.split(' ').pop() %> @ <%= g.home_team.split(' ').pop() %></th>
-          <% }) %>
-        </tr>
-      </thead>
-      <tbody>
-        <% grid.users.forEach(function(u) { %>
-          <tr>
-            <td><%= u.name %></td>
-            <% u.picks.forEach(function(p, i) { %>
-              <% const g = grid.games[i]; %>
-              <% const label = p.side ? (p.side === 'home' ? g.home_team.split(' ').pop() : g.away_team.split(' ').pop()) : '—'; %>
-              <td class="<%= p.correct === true ? 'pick-correct' : p.correct === false ? 'pick-wrong' : '' %>"><%= label %></td>
-            <% }) %>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
+  <p class="locked-note">Make all of your picks for this week (or wait for the first kickoff) to see who picked what.</p>
+<% } else { %>
+  <p><a class="btn secondary" href="/weeks/<%= week.id %>/board">View full picks board →</a></p>
 <% } %>
 
 <script src="/js/picks.js"></script>
