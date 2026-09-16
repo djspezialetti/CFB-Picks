@@ -13,6 +13,16 @@ router.get('/', requireAuth, (req, res) => {
   res.redirect(`/weeks/${weekId}`);
 });
 
+router.get('/board', requireAuth, (req, res) => {
+  const weeks = services.listWeeks();
+  if (weeks.length === 0) {
+    return res.render('no-weeks', {});
+  }
+  // Always the most recently loaded week - same "latest week" convention
+  // the plain "Picks" nav link uses.
+  res.redirect(`/weeks/${weeks[0].id}/board`);
+});
+
 router.get('/weeks/:weekId', requireAuth, (req, res) => {
   const weekId = Number(req.params.weekId);
   const week = services.getWeek(weekId);
