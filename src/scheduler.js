@@ -1,9 +1,9 @@
 // Automatically keeps the most recently loaded week's scores up to date,
 // so nobody has to remember to click "Refresh scores" on the Admin page.
 //
-// Schedule:
-//   - Saturdays: every 15 minutes (typical CFB game day)
-//   - All other days: every 12 hours (midnight and noon, server local time)
+// Schedule: every 15 minutes, every day - college football has games
+// scattered across weeknights too (MAC/Group of 5 Tuesday/Wednesday
+// games, Thursday/Friday night games, etc.), not just Saturdays.
 //
 // This only ever refreshes the single most recently loaded week (i.e.
 // whichever week is at the top of services.listWeeks()) - it does not
@@ -29,13 +29,10 @@ async function refreshCurrentWeek(reason) {
 }
 
 function start() {
-  // Every 15 minutes, Saturdays only. Cron day-of-week: 6 = Saturday.
-  cron.schedule('*/15 * * * 6', () => refreshCurrentWeek('Saturday 15-min'));
+  // Every 15 minutes, every day of the week.
+  cron.schedule('*/15 * * * *', () => refreshCurrentWeek('15-min'));
 
-  // Midnight and noon, Sunday through Friday (i.e. every day except Saturday).
-  cron.schedule('0 0,12 * * 0-5', () => refreshCurrentWeek('12-hour'));
-
-  console.log('[scheduler] Auto-refresh scheduled: every 15 min on Saturdays, every 12 hours otherwise.');
+  console.log('[scheduler] Auto-refresh scheduled: every 15 minutes, every day.');
 }
 
 module.exports = { start, refreshCurrentWeek };
