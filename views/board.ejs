@@ -37,13 +37,13 @@
             <td class="board-matchup-col">
               <div class="board-matchup">
                 <span class="board-team">
-                  <% if (g.away_logo) { %><img src="<%= g.away_logo %>" alt="" /><% } %>
-                  <%= g.away_team %>
+                  <% if (g.away_logo) { %><img src="<%= g.away_logo %>" alt="<%= g.away_team %>" /><% } %>
+                  <span class="board-team-text"><%= g.away_team %></span>
                 </span>
                 <span class="board-at">@</span>
                 <span class="board-team">
-                  <% if (g.home_logo) { %><img src="<%= g.home_logo %>" alt="" /><% } %>
-                  <%= g.home_team %>
+                  <% if (g.home_logo) { %><img src="<%= g.home_logo %>" alt="<%= g.home_team %>" /><% } %>
+                  <span class="board-team-text"><%= g.home_team %></span>
                 </span>
               </div>
             </td>
