@@ -488,3 +488,27 @@ thead .board-matchup-col { z-index: 3; background: var(--surface-raised); }
 
 .board-pick-logo { width: 26px; height: 26px; object-fit: contain; }
 .board-dash { color: var(--muted); }
+
+/* On narrow screens, the matchup column writing out full team names
+   was eating almost the entire width, pushing every player's picks
+   off-screen. Below this width, show logos only (stacked, with a tiny
+   "@" between them) so the column shrinks to a fraction of its size
+   and the actual picks - the point of this page - are visible without
+   having to scroll first. */
+@media (max-width: 640px) {
+  table.board-table { font-size: 11px; }
+  table.board-table th, table.board-table td { padding: 6px 5px; }
+
+  .board-matchup-col { max-width: 54px; }
+  .board-matchup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .board-matchup img { width: 22px; height: 22px; }
+  .board-team-text { display: none; }
+  .board-at { font-size: 9px; margin-left: 1px; }
+
+  .board-pick-logo { width: 22px; height: 22px; }
+  table.board-table thead th { font-size: 11px; }
+}
