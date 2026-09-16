@@ -20,6 +20,18 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.set('trust proxy', 1); // needed if running behind nginx/a reverse proxy with secure cookies
 
+// Cache-busting for the stylesheet: append the file's last-modified time
+// as a query string (e.g. style.css?v=1234). Since Cloudflare (and
+// browsers) cache static files like CSS aggressively by URL, changing
+// this value whenever the file changes forces a fresh fetch instead of
+// requiring a manual cache purge after every deploy - the app picks up
+// the new mtime automatically on its next restart.
+try {
+  app.locals.assetVersion = require('fs').statSync(path.join(__dirname, '..', 'public', 'css', 'style.css')).mtimeMs;
+} catch (err) {
+  app.locals.assetVersion = Date.now(); // fallback if the file is ever missing
+}
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
