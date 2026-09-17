@@ -258,8 +258,8 @@ p.lede { color: var(--muted); margin-top: 0; }
 }
 
 .team-logo {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   flex: none;
   background: var(--chalk);
@@ -441,14 +441,22 @@ table.board-table th, table.board-table td {
 
 table.board-table thead th {
   position: sticky;
-  top: 0;
   background: var(--surface-raised);
   font-family: var(--font-display);
   font-weight: 700;
   color: var(--chalk);
   z-index: 2;
 }
+/* Two header rows now ("Players" spanning the name columns, then each
+   name below it) - stack them so the second row's sticky offset starts
+   right where the first row ends, instead of overlapping it. The 41px
+   offset is an estimate based on this row's padding/font size; if the
+   two rows end up overlapping or leaving a visible gap once deployed,
+   nudge this value up or down a few pixels to match. */
+table.board-table thead tr:first-child th { top: 0; z-index: 3; }
+table.board-table thead tr:last-child th { top: 41px; }
 table.board-table thead th.is-you { color: var(--amber); }
+.board-players-header { text-align: center; }
 
 /* First column (matchup) stays visible while scrolling horizontally
    through players - the whole point of this page is comparing many
@@ -461,27 +469,27 @@ table.board-table thead th.is-you { color: var(--amber); }
   z-index: 1;
   box-shadow: 2px 0 0 var(--line);
 }
-thead .board-matchup-col { z-index: 3; background: var(--surface-raised); }
+thead .board-matchup-col { z-index: 4; background: var(--surface-raised); }
 
 .board-matchup {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 15px;
   color: var(--chalk);
 }
-.board-matchup img { width: 26px; height: 26px; object-fit: contain; flex: none; background: var(--chalk); border-radius: 50%; padding: 1px; }
+.board-matchup img { width: 22px; height: 22px; object-fit: contain; flex: none; background: var(--chalk); border-radius: 50%; padding: 1px; }
 .board-at { color: var(--muted); font-size: 10px; }
 
-.board-conference-row td {
+.board-conference-row .board-matchup-col {
   background: var(--surface-raised);
-  text-align: left;
+  text-align: center;
   font-family: var(--font-display);
   color: var(--amber);
   font-size: 14px;
-  padding: 8px 10px;
-  position: sticky;
-  left: 0;
+}
+.board-conference-row .conference-fill {
+  background: var(--surface-raised);
 }
 
 .board-cell { background: var(--surface); }
@@ -489,7 +497,7 @@ thead .board-matchup-col { z-index: 3; background: var(--surface-raised); }
 .board-cell.correct { background: rgba(79, 174, 121, 0.18); }
 .board-cell.wrong { background: rgba(217, 105, 95, 0.12); opacity: 0.7; }
 
-.board-pick-logo { width: 32px; height: 32px; object-fit: contain; background: var(--chalk); border-radius: 50%; padding: 2px; }
+.board-pick-logo { width: 30px; height: 30px; object-fit: contain; background: var(--chalk); border-radius: 50%; padding: 2px; }
 .board-dash { color: var(--muted); }
 
 /* On narrow screens, the matchup column writing out full team names
@@ -508,10 +516,10 @@ thead .board-matchup-col { z-index: 3; background: var(--surface-raised); }
     align-items: flex-start;
     gap: 3px;
   }
-  .board-matchup img { width: 30px; height: 30px; }
+  .board-matchup img { width: 26px; height: 26px; }
   .board-team-text { display: none; }
   .board-at { font-size: 10px; margin-left: 1px; }
 
-  .board-pick-logo { width: 30px; height: 30px; }
+  .board-pick-logo { width: 26px; height: 26px; }
   table.board-table thead th { font-size: 13px; }
 }
