@@ -18,7 +18,10 @@
     <table class="board-table">
       <thead>
         <tr>
-          <th class="board-matchup-col">Matchup</th>
+          <th class="board-matchup-col" rowspan="2">Matchup</th>
+          <th class="board-players-header" colspan="<%= grid.users.length %>">Players</th>
+        </tr>
+        <tr>
           <% grid.users.forEach(function(u) { %>
             <th class="<%= currentUser && u.id === currentUser.id ? 'is-you' : '' %>"><%= u.name %></th>
           <% }) %>
@@ -29,7 +32,8 @@
         <% grid.games.forEach(function(g, i) { %>
           <% if (g.conference !== lastConference) { %>
             <tr class="board-conference-row">
-              <td colspan="<%= grid.users.length + 1 %>"><%= g.conference || 'Other' %></td>
+              <td class="board-matchup-col"><%= g.conference || 'Other' %></td>
+              <td class="conference-fill" colspan="<%= grid.users.length %>"></td>
             </tr>
             <% lastConference = g.conference; %>
           <% } %>
