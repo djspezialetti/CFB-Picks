@@ -16,7 +16,7 @@
 // here (no other code needs to change).
 const CONFERENCES = [
   { name: 'ACC', espnGroupId: 1 },
-  { name: 'American Athletic Conference', espnGroupId: 62 },
+  { name: 'American Athletic Conference', espnGroupId: 151 },
   { name: 'Big 12', espnGroupId: 4 },
   { name: 'Big Ten', espnGroupId: 5 },
   { name: 'Conference USA', espnGroupId: 12 },
