@@ -299,6 +299,19 @@ function getSeasonStandings(seasonYear, seasonType = 2) {
   return { standings, weekSummaries };
 }
 
+// ---- User management ---------------------------------------------------
+
+function listUsers() {
+  return db.prepare('SELECT id, name, username, is_admin FROM users ORDER BY name COLLATE NOCASE').all();
+}
+
+// Deleting a user also removes all of their picks automatically (the
+// picks table's foreign key is set up with ON DELETE CASCADE).
+function deleteUser(userId) {
+  const info = db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+  return info.changes > 0;
+}
+
 module.exports = {
   getOrCreateWeek,
   listWeeks,
@@ -314,4 +327,6 @@ module.exports = {
   getPickGridForWeek,
   getWeekResults,
   getSeasonStandings,
+  listUsers,
+  deleteUser,
 };
