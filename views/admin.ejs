@@ -59,4 +59,31 @@
   </table>
 <% } %>
 
+<h2>Manage players</h2>
+<% if (users.length === 0) { %>
+  <p>No accounts yet.</p>
+<% } else { %>
+  <table class="admin-weeks">
+    <thead><tr><th>Name</th><th>Username</th><th>Admin?</th><th></th></tr></thead>
+    <tbody>
+      <% users.forEach(function(u) { %>
+        <tr>
+          <td><%= u.name %></td>
+          <td><%= u.username %></td>
+          <td><%= u.is_admin ? 'Yes' : '' %></td>
+          <td>
+            <% if (u.id === currentUser.id) { %>
+              <span class="lede" style="font-size:13px">That's you</span>
+            <% } else { %>
+              <form method="POST" action="/admin/delete-user/<%= u.id %>" onsubmit="return confirm('Remove <%= u.name %> and all of their picks? This can\'t be undone.');">
+                <button class="btn secondary" type="submit">Delete</button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
 <%- include('partials/footer') %>
