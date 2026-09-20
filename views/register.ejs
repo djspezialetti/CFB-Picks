@@ -1,7 +1,7 @@
 <%- include('partials/header', { title: 'Create account' }) %>
 
 <div class="auth-card">
-  <h1>Create Your Account!</h1>
+  <h1>Join the pool</h1>
   <p class="lede">Pick a username and password.</p>
 
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
@@ -23,6 +23,12 @@
       <label for="confirmPassword">Confirm password</label>
       <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" minlength="6" required />
     </div>
+    <% if (requiresCode) { %>
+    <div class="field">
+      <label for="inviteCode">Invite code</label>
+      <input type="text" id="inviteCode" name="inviteCode" value="<%= form.inviteCode || '' %>" placeholder="Ask whoever sent you the link" required />
+    </div>
+    <% } %>
     <button class="btn" type="submit">Create account</button>
   </form>
 
