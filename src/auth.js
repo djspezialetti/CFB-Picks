@@ -26,6 +26,15 @@ function verifyLogin(username, password) {
   return user;
 }
 
+// Admin-initiated password reset - bypasses the old password entirely,
+// for when someone forgets theirs. Returns false if no user with that id
+// exists, true otherwise.
+function resetPassword(userId, newPassword) {
+  const hash = bcrypt.hashSync(newPassword, 10);
+  const info = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId);
+  return info.changes > 0;
+}
+
 function requireAuth(req, res, next) {
   if (!req.session.userId) {
     return res.redirect('/login');
@@ -47,4 +56,4 @@ function attachUser(req, res, next) {
   next();
 }
 
-module.exports = { createUser, verifyLogin, requireAuth, requireAdmin, attachUser };
+module.exports = { createUser, verifyLogin, resetPassword, requireAuth, requireAdmin, attachUser };
