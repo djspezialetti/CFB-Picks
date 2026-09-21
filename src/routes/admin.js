@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireAdmin } = require('../auth');
+const { requireAuth, requireAdmin, resetPassword } = require('../auth');
 const services = require('../services');
 
 const router = express.Router();
@@ -98,6 +98,28 @@ router.post('/admin/delete-user/:userId', requireAuth, requireAdmin, (req, res) 
 
   services.deleteUser(targetId);
   render(`Removed ${target.name} and all of their picks.`, null);
+});
+
+router.post('/admin/reset-password/:userId', requireAuth, requireAdmin, (req, res) => {
+  const weeks = services.listWeeks();
+  const currentYear = new Date().getFullYear();
+  const targetId = Number(req.params.userId);
+  const { newPassword } = req.body;
+
+  const render = (message, error) =>
+    res.render('admin', { weeks, users: services.listUsers(), currentYear, message, error });
+
+  const target = services.listUsers().find((u) => u.id === targetId);
+  if (!target) {
+    return render(null, 'That user no longer exists.');
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    return render(null, 'New password must be at least 6 characters.');
+  }
+
+  resetPassword(targetId, newPassword);
+  render(`Password reset for ${target.name}. Let them know their new password directly.`, null);
 });
 
 module.exports = router;
