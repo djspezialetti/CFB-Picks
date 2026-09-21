@@ -1,83 +1,59 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const { createUser, verifyLogin } = require('../auth');
+const bcrypt = require('bcryptjs');
+const db = require('./db');
 
-const router = express.Router();
-
-// Slows down scripted/automated abuse without getting in the way of a
-// real person occasionally mistyping a password. These count per IP.
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 8,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many accounts created from this network recently. Try again later.',
-});
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many login attempts. Wait a few minutes and try again.',
-});
-
-router.get('/register', (req, res) => {
-  if (req.session.userId) return res.redirect('/');
-  res.render('register', { error: null, form: {}, requiresCode: !!process.env.REGISTRATION_CODE });
-});
-
-router.post('/register', registerLimiter, (req, res) => {
-  const { name, username, password, confirmPassword, inviteCode } = req.body;
-  const requiresCode = !!process.env.REGISTRATION_CODE;
-
-  if (!name || !username || !password) {
-    return res.status(400).render('register', { error: 'All fields are required.', form: req.body, requiresCode });
+function createUser({ name, username, password }) {
+  const normalizedUsername = username.trim().toLowerCase();
+  const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(normalizedUsername);
+  if (existing) {
+    const err = new Error('That username is already taken.');
+    err.code = 'USERNAME_TAKEN';
+    throw err;
   }
-  if (requiresCode && inviteCode !== process.env.REGISTRATION_CODE) {
-    // Deliberately vague error - doesn't hint at whether the code was
-    // close or which field was wrong, so it's not useful feedback for
-    // someone guessing.
-    return res.status(400).render('register', { error: 'Incorrect invite code.', form: req.body, requiresCode });
-  }
-  if (password.length < 6) {
-    return res.status(400).render('register', { error: 'Password must be at least 6 characters.', form: req.body, requiresCode });
-  }
-  if (password !== confirmPassword) {
-    return res.status(400).render('register', { error: 'Passwords do not match.', form: req.body, requiresCode });
-  }
+  const hash = bcrypt.hashSync(password, 10);
+  const info = db
+    .prepare('INSERT INTO users (name, username, password_hash) VALUES (?, ?, ?)')
+    .run(name.trim(), normalizedUsername, hash);
+  return db.prepare('SELECT id, name, username, is_admin FROM users WHERE id = ?').get(info.lastInsertRowid);
+}
 
-  try {
-    const user = createUser({ name, username, password });
-    req.session.userId = user.id;
-    req.session.userName = user.name;
-    req.session.isAdmin = !!user.is_admin;
-    res.redirect('/');
-  } catch (err) {
-    const message = err.code === 'USERNAME_TAKEN' ? err.message : 'Could not create account.';
-    res.status(400).render('register', { error: message, form: req.body, requiresCode });
+function verifyLogin(username, password) {
+  const user = db
+    .prepare('SELECT * FROM users WHERE username = ?')
+    .get(username.trim().toLowerCase());
+  if (!user) return null;
+  const ok = bcrypt.compareSync(password, user.password_hash);
+  if (!ok) return null;
+  return user;
+}
+
+// Admin-initiated password reset - bypasses the old password entirely,
+// for when someone forgets theirs. Returns false if no user with that id
+// exists, true otherwise.
+function resetPassword(userId, newPassword) {
+  const hash = bcrypt.hashSync(newPassword, 10);
+  const info = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId);
+  return info.changes > 0;
+}
+
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.redirect('/login');
   }
-});
+  next();
+}
 
-router.get('/login', (req, res) => {
-  if (req.session.userId) return res.redirect('/');
-  res.render('login', { error: null, form: {} });
-});
-
-router.post('/login', loginLimiter, (req, res) => {
-  const { username, password } = req.body;
-  const user = verifyLogin(username || '', password || '');
-  if (!user) {
-    return res.status(400).render('login', { error: 'Incorrect username or password.', form: req.body });
+function requireAdmin(req, res, next) {
+  if (!req.session.isAdmin) {
+    return res.status(403).render('error', { message: 'Admins only.' });
   }
-  req.session.userId = user.id;
-  req.session.userName = user.name;
-  req.session.isAdmin = !!user.is_admin;
-  res.redirect('/');
-});
+  next();
+}
 
-router.post('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/login'));
-});
+function attachUser(req, res, next) {
+  res.locals.currentUser = req.session.userId
+    ? { id: req.session.userId, name: req.session.userName, isAdmin: !!req.session.isAdmin }
+    : null;
+  next();
+}
 
-module.exports = router;
+module.exports = { createUser, verifyLogin, resetPassword, requireAuth, requireAdmin, attachUser };
