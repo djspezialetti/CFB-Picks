@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireAdmin, resetPassword } = require('../auth');
+const { requireAuth, requireAdmin, resetPassword } = require('../auth-service');
 const services = require('../services');
 
 const router = express.Router();
