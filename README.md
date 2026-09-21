@@ -1,10 +1,8 @@
-# SaturdaySlate — College Football Pick 'Em Pool
+# College Football Pick 'Ems
 
-A self-hosted app for a group pool where everyone picks the winner of every
-FBS matchup each week. Replaces the manual "Google Doc + text thread"
-workflow with accounts, live picks, a full picks board, and automatic
-weekly/season standings — pulling matchups, records, spreads, and rankings
-straight from ESPN.
+The goal of this project was to create an interactive website for weekly college football picks to automate the process of having to create a Google Doc and share it with others. On first visit, the user will be brought to the login page, where they can sign in or register to create an account. The user will also be asked to enter an "Invite Code," which is stored in the ".env" file on the server. Once a user enters their chosen username, display name, password, and the invite code, they will be taken to the "Picks" page to pick who they think will win each matchup for a given week of CFB. As matches are played on Saturday, the website will update by pulling information from ESPN's website every 15 minutes. After a match has completed and the website has updated, users will get a "win" added to their score for the current week. Whoever picks the most matchups correctly in a given week is deemed the winner for a given week.
+
+The following is a quick breakdown of how the server operates under-the-hood for those who are technically savvy:
 
 - **Backend:** Node.js + Express + SQLite (via `better-sqlite3`) — a single
   file database, no separate DB server to run or maintain.
@@ -32,7 +30,7 @@ straight from ESPN.
   American Athletic, Big 12, Big Ten, Conference USA, FBS Independents,
   Mid-American, Mountain West, Pac-12, SEC, Sun Belt, alphabetically), with
   crossover games (e.g. an ACC team hosting a Big Ten team) filed under the
-  **home team's** conference — no duplicates.
+  **home team's** conference.
 - **Team info at a glance:** logos, AP-style rankings (`#3`), overall and
   conference win-loss records, the betting spread, and the game's location
   (with a "Neutral site" tag when it's not being played at either team's
