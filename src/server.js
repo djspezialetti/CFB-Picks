@@ -5,7 +5,7 @@ const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 
 require('./db'); // ensures schema is created before routes touch it
-const { attachUser } = require('./auth');
+const { attachUser } = require('./auth-service');
 
 const authRoutes = require('./routes/auth');
 const pickRoutes = require('./routes/picks');
