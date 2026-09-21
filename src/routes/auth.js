@@ -1,6 +1,6 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { createUser, verifyLogin } = require('../auth');
+const { createUser, verifyLogin } = require('../auth-service');
 
 const router = express.Router();
 
