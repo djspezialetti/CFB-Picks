@@ -411,6 +411,24 @@ table.admin-weeks th, table.admin-weeks td {
   padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left;
 }
 
+.inline-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+.inline-form input {
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--chalk);
+  font-family: var(--font-body);
+  font-size: 13px;
+  width: 130px;
+}
+.inline-form input:focus { border-color: var(--turf-bright); }
+
 @media (max-width: 520px) {
   .matchup { grid-template-columns: 1fr; }
   .matchup-mid { padding: 4px 0; }
