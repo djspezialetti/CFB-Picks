@@ -54,7 +54,8 @@ router.post('/register', registerLimiter, (req, res) => {
     req.session.isAdmin = !!user.is_admin;
     res.redirect('/');
   } catch (err) {
-    const message = err.code === 'USERNAME_TAKEN' ? err.message : 'Could not create account.';
+    const message =
+      err.code === 'USERNAME_TAKEN' || err.code === 'NAME_TAKEN' ? err.message : 'Could not create account.';
     res.status(400).render('register', { error: message, form: req.body, requiresCode });
   }
 });
